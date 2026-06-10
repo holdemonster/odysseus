@@ -79,7 +79,12 @@ services:
       - NVIDIA_DRIVER_CAPABILITIES=compute,utility
     depends_on:
       searxng:
-        condition: service_healthy
+        # Do not gate the main app on SearXNG's container health status.
+        # In Coolify, `condition: service_healthy` makes `docker compose up` fail
+        # the entire Odysseus deployment if SearXNG's own healthcheck is slow or
+        # overly strict. Odysseus already tolerates search being unavailable and
+        # can retry/probe it at runtime, so only require the sidecar to be started.
+        condition: service_started
       chromadb:
         condition: service_started
     restart: unless-stopped
