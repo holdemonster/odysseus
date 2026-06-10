@@ -123,7 +123,11 @@ services:
       - SETUID
       - DAC_OVERRIDE
     healthcheck:
-      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8080/', timeout=5).read(1)\""]
+      # Probe SearXNG's lightweight health endpoint rather than `/`.
+      # The root page can trip request/bot protections for Python's default
+      # urllib user-agent, which leaves the service marked unhealthy and blocks
+      # Odysseus via `depends_on: condition: service_healthy` in Coolify.
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8080/healthz', timeout=5).read(1)\""]
       interval: 5s
       timeout: 6s
       retries: 20
